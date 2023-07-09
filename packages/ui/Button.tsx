@@ -12,7 +12,7 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ children, ...rest }, ref) => {
     return (
-      <button className="bg-green-500" ref={ref} {...rest}>
+      <button className="bg-green-500 border" ref={ref} {...rest}>
         {children}
       </button>
     );
