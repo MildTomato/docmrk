@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@supabase/auth-helpers-nextjs": "latest",
+    "@tanstack/react-query": "^4.29.19",
     "next": "latest",
     "react": "18.2.0",
     "react-dom": "18.2.0",
@@ -20,9 +21,9 @@
     "@types/react": "18.2.12",
     "@types/react-dom": "18.2.5",
     "autoprefixer": "^10.4.14",
+    "eslint-config-custom": "*",
     "postcss": "^8.4.25",
     "tailwindcss": "^3.3.2",
-    "eslint-config-custom": "*",
     "tsconfig": "*",
     "typescript": "5.1.3"
   }
