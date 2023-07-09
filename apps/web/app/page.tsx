@@ -80,7 +80,7 @@ export default async function Index() {
           </div>
           <h1 className="sr-only">Supabase and Next.js Starter Template</h1>
           example button
-          <Button>hello world</Button>
+          <Button>hello world 2</Button>
           <p className="text-3xl lg:text-4xl !leading-tight mx-auto max-w-xl text-center my-12">
             The fastest way to start building apps with{" "}
             <strong>Supabase</strong> and <strong>Next.js</strong>
