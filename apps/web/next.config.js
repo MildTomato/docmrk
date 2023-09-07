@@ -4,7 +4,7 @@ const nextConfig = {
     serverActions: true,
   },
   reactStrictMode: true,
-  transpilePackages: ["ui"],
-}
+  transpilePackages: ["ui", "types"],
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;
