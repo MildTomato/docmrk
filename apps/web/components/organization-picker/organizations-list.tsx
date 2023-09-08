@@ -19,7 +19,7 @@ import {
 type Organization = Database["public"]["Tables"]["organizations"]["Row"];
 
 export default function OrganizationsList({
-  organizations,
+  organizations = [],
 }: {
   organizations: Organization[];
 }) {
@@ -46,7 +46,7 @@ export default function OrganizationsList({
           {value
             ? organizations.find((organization) => organization.id === value)
                 ?.name
-            : "Select organization..."}
+            : "Select organization  ..."}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
