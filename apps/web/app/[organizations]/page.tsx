@@ -1,4 +1,4 @@
-import { NavigationTop } from "@/components/NavigationTop";
+import Link from "next/link";
 
 export default function Organizations() {
   // const supabase = createServerComponentClient({ cookies });
@@ -11,11 +11,8 @@ export default function Organizations() {
 
   return (
     <div className="w-full flex flex-col items-center">
-      <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
-        <div className="w-full max-w-4xl flex justify-between items-center p-3 text-sm text-foreground">
-          <NavigationTop />
-        </div>
-      </nav>
+      <Link href="/803c8ce2-2d8a-4221-a4f2-bea266f1c125">something</Link>
+      Hello world
     </div>
   );
 }

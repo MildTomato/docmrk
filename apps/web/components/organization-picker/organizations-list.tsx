@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, ChevronsUpDown } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { useState } from "react";
 import { Database } from "types";
 import {
@@ -25,17 +25,24 @@ export default function OrganizationsList({
   organizations: Organization[];
 }) {
   // Create a Supabase client configured to use cookies
+  const router = useRouter();
+
+  const params = useParams();
+
+  const searchParams = useSearchParams();
+  console.log("useSearchParams", searchParams.get("organizations"));
+  console.log("params", params);
 
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState("");
-
-  const router = useRouter();
+  const [value, setValue] = useState<string | undefined>(
+    params["organizations"] ?? undefined
+  );
 
   // This assumes you have a `todos` table in Supabase. Check out
   // the `Create Table and seed with data` section of the README 👇
   // https://github.com/vercel/next.js/blob/canary/examples/with-supabase/README.md
 
-  // return <pre>{JSON.stringify(todos, null, 2)}</pre>;
+  console.log("render organization picker");
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -65,7 +72,10 @@ export default function OrganizationsList({
                   key={x.id}
                   value={x.id}
                   onSelect={(currentValue) => {
-                    setValue(currentValue);
+                    const org = organizations.find(
+                      (org) => org.id === currentValue
+                    );
+                    setValue(org.id);
                     setOpen(false);
                     router.push(currentValue);
                   }}
