@@ -41,6 +41,7 @@ export default function OrganizationsList({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          aria-label="Organization picker"
           variant="outline"
           role="combobox"
           aria-expanded={open}

@@ -14,6 +14,7 @@ async function Loading() {
   return (
     <Button
       disabled
+      aria-label="Organization picker"
       variant="outline"
       role="combobox"
       aria-expanded={false}
