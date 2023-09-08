@@ -1,5 +1,6 @@
 import { organizationKeys } from "./keys";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { PostgrestResponseSuccess } from "@supabase/postgrest-js";
 import {
   QueryClient,
   useQuery,
@@ -7,24 +8,22 @@ import {
   UseQueryOptions,
 } from "@tanstack/react-query";
 import { useCallback } from "react";
+import { Database } from "types";
 
-// import { Organization } from "types";
+type Organization = Database["public"]["Tables"]["organizations"]["Row"];
 
-// export type OrganizationsResponse = Organization[];
+export type OrganizationsResponse = Organization[];
 
 export async function getOrganizations(
   signal?: AbortSignal
 ): Promise<OrganizationsResponse> {
-  // Create a Supabase client configured to use cookies
-  const supabase = createClientComponentClient();
-
+  const supabase = createClientComponentClient<Database>();
   const data = await supabase.from("organizations").select("*");
 
-  // const data = await get(`${API_URL}/organizations`, { signal });
   if (data.error) throw data.error;
 
-  const sorted = (data as Organization[]).sort((a, b) =>
-    a.name.localeCompare(b.name)
+  const sorted = (data as PostgrestResponseSuccess<Organization[]>).data.sort(
+    (a, b) => a.name.localeCompare(b.name)
   );
 
   return sorted;
@@ -52,7 +51,7 @@ export function prefetchOrganizations(client: QueryClient) {
 export const useOrganizationsPrefetch = () => {
   const client = useQueryClient();
 
-  return useCallback(() => prefetchOrganizations(client), []);
+  return useCallback(() => prefetchOrganizations(client), [client]);
 };
 
 export function invalidateOrganizationsQuery(client: QueryClient) {

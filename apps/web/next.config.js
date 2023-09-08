@@ -4,7 +4,7 @@ const nextConfig = {
     serverActions: true,
   },
   reactStrictMode: true,
-  transpilePackages: ["ui", "types"],
+  transpilePackages: ["ui", "types", "tailwindconfig", "tsconfig"],
 };
 
 module.exports = nextConfig;
