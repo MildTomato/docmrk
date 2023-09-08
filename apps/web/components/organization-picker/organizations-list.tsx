@@ -1,6 +1,7 @@
 "use client";
 
 import { Check, ChevronsUpDown } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Database } from "types";
 import {
@@ -28,6 +29,8 @@ export default function OrganizationsList({
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
 
+  const router = useRouter();
+
   // This assumes you have a `todos` table in Supabase. Check out
   // the `Create Table and seed with data` section of the README 👇
   // https://github.com/vercel/next.js/blob/canary/examples/with-supabase/README.md
@@ -46,7 +49,7 @@ export default function OrganizationsList({
           {value
             ? organizations.find((organization) => organization.id === value)
                 ?.name
-            : "Select organization  ..."}
+            : "Select organization..."}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -63,6 +66,7 @@ export default function OrganizationsList({
                   onSelect={(currentValue) => {
                     setValue(currentValue);
                     setOpen(false);
+                    router.push(currentValue);
                   }}
                 >
                   <Check
