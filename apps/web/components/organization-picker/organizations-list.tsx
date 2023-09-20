@@ -35,7 +35,7 @@ export default function OrganizationsList({
 
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState<string | undefined>(
-    params["organizations"] ?? undefined
+    params["organizations"]?.toString() ?? undefined
   );
 
   // This assumes you have a `todos` table in Supabase. Check out

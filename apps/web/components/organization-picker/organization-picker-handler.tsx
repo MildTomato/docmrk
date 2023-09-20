@@ -3,6 +3,8 @@ import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { Database } from "types";
 
+export const dynamic = "force-dynamic";
+
 export default async function OrganizationLoader() {
   // Create a Supabase client configured to use cookies
   const supabase = createServerComponentClient<Database>({ cookies });
