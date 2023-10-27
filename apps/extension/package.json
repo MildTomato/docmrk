@@ -1,6 +1,6 @@
 {
-  "name": "docmrk-extension",
-  "displayName": "Docmrk extension",
+  "name": "docmrk-chrome-extension",
+  "displayName": "Docmrk Chrome extension",
   "version": "0.0.1",
   "description": "Docmrk tagging tool",
   "author": "@jsummersmuir",
