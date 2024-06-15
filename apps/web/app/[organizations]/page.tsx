@@ -1,4 +1,5 @@
 import Link from "next/link";
+import FeedbackList from "./feedback";
 
 export default function Organizations() {
   // const supabase = createServerComponentClient({ cookies });
@@ -13,6 +14,7 @@ export default function Organizations() {
     <div className="w-full flex flex-col items-center">
       <Link href="/803c8ce2-2d8a-4221-a4f2-bea266f1c125">something</Link>
       Hello world
+      <FeedbackList />
     </div>
   );
 }
