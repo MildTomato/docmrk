@@ -5,7 +5,8 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "gen-types": "supabase gen types typescript --project-id \"spztrrugbkgdayfejlvi\" --schema public > packages/types/supabase.ts"
   },
   "devDependencies": {
     "plasmo": "^0.87.2",
