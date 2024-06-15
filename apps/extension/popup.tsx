@@ -1,7 +1,21 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
+
+import "./style.css"
 
 function IndexPopup() {
   const [data, setData] = useState("")
+
+  const [offset, setOffset] = useState(0)
+
+  useEffect(() => {
+    const onScroll = () => setOffset(window.pageYOffset)
+    // clean up code
+    window.removeEventListener("scroll", onScroll)
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [])
+
+  console.log(offset)
 
   return (
     <div
@@ -10,9 +24,10 @@ function IndexPopup() {
         display: "flex",
         flexDirection: "column",
         padding: 16
-      }}>
-      <h2>
-        JONNY Welcome to your{" "}
+      }}
+      className="dm-bg-red-200">
+      <h2 className="dm-text-lg dm-font-mono">
+        TESTING AGAINNNN
         <a href="https://www.plasmo.com" target="_blank">
           Plasmo
         </a>{" "}
