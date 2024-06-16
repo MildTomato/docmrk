@@ -2,6 +2,10 @@ import { useEffect, useState } from "react"
 
 import "./style.css"
 
+import { sendToBackground } from "@plasmohq/messaging"
+
+import { supabase } from "~core/supabase"
+
 function IndexPopup() {
   const [data, setData] = useState("")
 
@@ -15,7 +19,33 @@ function IndexPopup() {
     return () => window.removeEventListener("scroll", onScroll)
   }, [])
 
-  console.log(offset)
+  // console.log(offset)
+
+  useEffect(() => {
+    async function init() {
+      //
+
+      await sendToBackground({
+        name: "ping",
+        body: {
+          id: 123
+        },
+        extensionId: "djfiahgkbkldjjipdlfklbcjdcckdfih"
+      })
+
+      //
+
+      const { data, error } = await supabase.auth.getSession()
+      console.log("Data from session", data)
+
+      if (error) {
+        console.error(error)
+        return
+      }
+    }
+
+    init()
+  }, [])
 
   return (
     <div

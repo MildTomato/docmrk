@@ -1,32 +1,12 @@
-//   return (
-//     <div
-//       style={{
-//         position: "relative",
-//         border: "1px solid #fff",
-//         padding: "6px 12px",
-//         borderRadius: "96px",
-//         fontFamily: '"Helvetica", "Sans-Serif", "Arial"',
-//         fontSize: "13px",
-//         color: "white",
-//         marginTop: "16px",
-//         marginBottom: "16px"
-//       }}>
-//       Feedback Logged
-//     </div>
-//   )
-// }
-
-// export default Cat
-// import cssText from "data-text:~style.css"
 import type { PlasmoCSConfig } from "plasmo"
 import { useCallback, useEffect } from "react"
 import { createRoot } from "react-dom/client"
 
-// export const getStyle = () => {
-//   const style = document.createElement("style")
-//   style.textContent = cssText
-//   return style
-// }
+import { sendToBackground } from "@plasmohq/messaging"
+
+// import { sendToBackground } from "@plasmohq/messaging"
+
+// import { supabase } from "~core/supabase"
 
 export const config: PlasmoCSConfig = {
   matches: ["https://x.com/*"],
@@ -34,7 +14,6 @@ export const config: PlasmoCSConfig = {
 }
 
 const FeedbackDiv = () => {
-  console.log("Rendering FeedbackDiv with class: font-mono")
   return (
     <button
       className="feedback-logged"
@@ -77,20 +56,33 @@ const FeedbackDiv = () => {
 }
 
 function Cat() {
+  console.log("twitter.ts content ")
+
+  useEffect(() => {
+    async function send() {
+      const resp = await sendToBackground({
+        name: "ping",
+        body: {
+          id: "i am in the twitter.ts file"
+        },
+        extensionId: "djfiahgkbkldjjipdlfklbcjdcckdfih" // find this in chrome's extension manager
+      })
+    }
+
+    send()
+  }, [])
+
   const addFeedbackDiv = useCallback(() => {
-    console.log("Running addFeedbackDiv")
     const anchors = document.querySelectorAll(
       `[data-testid="tweet"] [data-testid="tweetText"]`
     )
+
     anchors.forEach((anchor) => {
       if (!anchor.querySelector(".feedback-logged")) {
-        console.log("Adding feedback div to", anchor)
         const container = document.createElement("div")
         const root = createRoot(container)
         root.render(<FeedbackDiv />)
         anchor.appendChild(container)
-        // Verify the class is added
-        console.log(container.outerHTML) // Log to verify
       }
     })
   }, [])
