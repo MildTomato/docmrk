@@ -13,9 +13,20 @@ export const config: PlasmoCSConfig = {
   all_frames: true
 }
 
-const FeedbackDiv = () => {
+const FeedbackDiv = ({ id, data }: { id: string; data: any }) => {
+  async function handleClick() {
+    const resp = await sendToBackground({
+      name: "ping",
+      body: {
+        id: "i am in the twitter.ts file"
+      },
+      extensionId: "djfiahgkbkldjjipdlfklbcjdcckdfih" // find this in chrome's extension manager
+    })
+  }
+
   return (
     <button
+      onClick={async () => await handleClick()}
       className="feedback-logged"
       style={{
         backgroundColor: "#333",
@@ -26,8 +37,9 @@ const FeedbackDiv = () => {
         fontFamily: '"Helvetica", "Sans-Serif", "Arial"',
         fontSize: "11px",
         color: "white",
-        marginTop: "16px",
-        marginBottom: "16px",
+        // marginTop: "16px",
+        // marginBottom: "16px",
+        marginLeft: "8px",
         width: "fit-content",
         display: "flex",
         gap: "4px",
@@ -50,39 +62,98 @@ const FeedbackDiv = () => {
           />
         </svg> */}
       {/* </div> */}
-      Log as feedback
+      Log as feedback {id} <span style={{ color: "red" }}>{data}</span>
     </button>
   )
+}
+
+async function send({ body }: { body: any }) {
+  const resp = await sendToBackground({
+    name: "get-tweet-feedback",
+    body: body,
+    extensionId: "djfiahgkbkldjjipdlfklbcjdcckdfih" // find this in chrome's extension manager
+  })
+
+  return resp
 }
 
 function Cat() {
   console.log("twitter.ts content ")
 
-  useEffect(() => {
-    async function send() {
-      const resp = await sendToBackground({
-        name: "ping",
-        body: {
-          id: "i am in the twitter.ts file"
-        },
-        extensionId: "djfiahgkbkldjjipdlfklbcjdcckdfih" // find this in chrome's extension manager
-      })
-    }
+  // useEffect(() => {
+  //   async function send() {
+  //     const resp = await sendToBackground({
+  //       name: "ping",
+  //       body: {
+  //         id: "i am in the twitter.ts file"
+  //       },
+  //       extensionId: "djfiahgkbkldjjipdlfklbcjdcckdfih" // find this in chrome's extension manager
+  //     })
+  //   }
 
-    send()
-  }, [])
+  //   send()
+  // }, [])
 
   const addFeedbackDiv = useCallback(() => {
     const anchors = document.querySelectorAll(
-      `[data-testid="tweet"] [data-testid="tweetText"]`
+      `[data-testid="tweet"] [data-testid="User-Name"]`
+      // `[data-testid="tweet"] [data-testid="tweetText"]`
     )
 
-    anchors.forEach((anchor) => {
-      if (!anchor.querySelector(".feedback-logged")) {
-        const container = document.createElement("div")
-        const root = createRoot(container)
-        root.render(<FeedbackDiv />)
-        anchor.appendChild(container)
+    anchors.forEach(async (anchor) => {
+      try {
+        // console.log(anchor)
+
+        // find in anchor variable a anchor tag and extract the href, which looks like /username/status/id-of-numbers
+        // IT IS NOT THE FIRST ANCHOR TAG, IT IS THE SECOND ONE
+        // we need the number id
+        const tweetElement = anchor.closest('[data-testid="tweet"]')
+
+        let id = null
+
+        // Extract the ID from the link
+        const linkWithId = tweetElement.querySelector('a[href*="/status/"]')
+        if (linkWithId) {
+          const href = linkWithId.getAttribute("href")
+          id = href.split("/").pop()
+          // console.log(`ID: ${id}`)
+        }
+
+        // Extract the tweet text
+        const tweetTextElement = tweetElement.querySelector(
+          '[data-testid="tweetText"]'
+        )
+
+        let tweetText = null
+
+        if (tweetTextElement) {
+          tweetText = tweetTextElement.textContent
+          // console.log(`Tweet Text: ${tweetText}`)
+        }
+
+        const resp = await sendToBackground({
+          name: "get-tweet-feedback",
+          body: { id: id, tweetText: tweetText },
+          extensionId: "djfiahgkbkldjjipdlfklbcjdcckdfih" // find this in chrome's extension manager
+        })
+        // console.log("resp has finished")
+        // console.log("send resp", resp.data)
+
+        /**
+         * Found a tweet, but the feedback div is not already present
+         */
+        if (!anchor.querySelector(".feedback-logged")) {
+          // console.log("Inserting button ", id)
+          // create div
+          const container = document.createElement("div")
+          const root = createRoot(container)
+
+          // render the div
+          root.render(<FeedbackDiv id={id} data={resp.data[1].status} />)
+          anchor.appendChild(container)
+        }
+      } catch (error) {
+        console.error("ERROR", error)
       }
     })
   }, [])
@@ -111,7 +182,7 @@ function Cat() {
 
       scrollTimeout = setTimeout(() => {
         addFeedbackDiv()
-      }, 100) // Run the function after the user stops scrolling for 100ms
+      }, 500) // Run the function after the user stops scrolling for 100ms
     }
 
     window.addEventListener("scroll", handleScroll)

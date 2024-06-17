@@ -29,6 +29,8 @@ const PlasmoOverlay = () => {
 
   // send()
 
+  return <></>
+
   return (
     <button
       onClick={() => increase()}
