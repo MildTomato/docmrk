@@ -15,16 +15,16 @@ ALTER TABLE "public"."organizations"
 CREATE POLICY "Owner can select" ON "public"."organizations"
   FOR SELECT
   TO "authenticated"
-  USING ((auth.uid() = inserted_by));
+  USING ((inserted_by = (SELECT auth.uid())));
 
-CREATE POLICY "select_organizations_policy" ON "public"."organizations"
+CREATE POLICY "Owner can insert" ON "public"."organizations"
+  FOR INSERT
+  TO "authenticated"
+  WITH CHECK ((inserted_by = (SELECT auth.uid())));
+
+CREATE POLICY "Owner can update" ON "public"."organizations"
   FOR UPDATE
   TO "authenticated"
-  USING ((auth.uid() = id));
-
-CREATE POLICY "view_organizations_policy" ON "public"."organizations"
-  FOR SELECT
-  TO "authenticated"
-  USING ((inserted_by = auth.uid()));
+  USING ((inserted_by = (SELECT auth.uid())));
 
 GRANT DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "public"."organizations" TO "anon", "authenticated", "postgres", "service_role";

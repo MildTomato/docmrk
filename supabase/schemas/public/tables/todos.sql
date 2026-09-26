@@ -11,14 +11,14 @@ CREATE TABLE "public"."todos" (
 ALTER TABLE "public"."todos"
   ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Authenticated users can select todos" ON "public"."todos"
+CREATE POLICY "Users can select their own todos" ON "public"."todos"
   FOR SELECT
   TO "authenticated"
-  USING (true);
+  USING ((user_id = (SELECT auth.uid())));
 
 GRANT DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "public"."todos" TO "anon", "authenticated", "postgres", "service_role";
 
 CREATE POLICY "Authenticated users can insert their own todos" ON "public"."todos"
   FOR INSERT
   TO "authenticated"
-  WITH CHECK ((auth.uid() = user_id));
+  WITH CHECK (((SELECT auth.uid()) = user_id));

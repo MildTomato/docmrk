@@ -9,4 +9,11 @@ CREATE TABLE "public"."sources" (
 ALTER TABLE "public"."sources"
   ENABLE ROW LEVEL SECURITY;
 
+-- Reference data (twitter, reddit, email, ...). Readable by any signed-in
+-- user so the app can resolve source labels; writes stay service-role only.
+CREATE POLICY "Authenticated users can select sources" ON "public"."sources"
+  FOR SELECT
+  TO "authenticated"
+  USING (true);
+
 GRANT DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "public"."sources" TO "anon", "authenticated", "postgres", "service_role";

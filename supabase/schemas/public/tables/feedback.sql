@@ -20,15 +20,35 @@ ALTER TABLE "public"."feedback"
 ALTER TABLE "public"."feedback"
   ADD COLUMN "status" public.status DEFAULT 'untriaged'::public.status;
 
-CREATE POLICY "ALLOW INSERT FOR ANYONE" ON "public"."feedback"
+CREATE POLICY "Org owners can select feedback" ON "public"."feedback"
+  FOR SELECT
+  TO "authenticated"
+  USING (EXISTS (
+    SELECT 1
+    FROM public.organizations o
+    WHERE o.id = feedback.organization_id
+      AND o.inserted_by = (SELECT auth.uid())
+  ));
+
+CREATE POLICY "Org owners can insert feedback" ON "public"."feedback"
   FOR INSERT
   TO "authenticated"
-  WITH CHECK (true);
+  WITH CHECK (EXISTS (
+    SELECT 1
+    FROM public.organizations o
+    WHERE o.id = feedback.organization_id
+      AND o.inserted_by = (SELECT auth.uid())
+  ));
 
-CREATE POLICY "Anyone can select" ON "public"."feedback"
-  FOR SELECT
-  TO PUBLIC
-  USING (true);
+CREATE POLICY "Org owners can update feedback" ON "public"."feedback"
+  FOR UPDATE
+  TO "authenticated"
+  USING (EXISTS (
+    SELECT 1
+    FROM public.organizations o
+    WHERE o.id = feedback.organization_id
+      AND o.inserted_by = (SELECT auth.uid())
+  ));
 
 GRANT DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "public"."feedback" TO "anon", "authenticated", "postgres", "service_role";
 
