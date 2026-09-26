@@ -31,6 +31,7 @@ test("shared control styles stay inside each shadow root and survive account ref
   )
   global.window = dom.window
   global.document = dom.window.document
+  document.body.style.backgroundColor = "white"
   global.IS_REACT_ACT_ENVIRONMENT = true
   let contextChanged
   let reads = 0
@@ -76,6 +77,7 @@ test("shared control styles stay inside each shadow root and survive account ref
       true
     )
     assert.equal(shadow.querySelector("button").textContent, "Save to Docmrk")
+    assert.equal(host.classList.contains("dark"), false)
     await act(async () =>
       contextChanged(
         { "docmrk-context-version": { newValue: "changed" } },
@@ -89,6 +91,31 @@ test("shared control styles stay inside each shadow root and survive account ref
       css,
       "React rerenders must preserve the stylesheet"
     )
+    await act(async () => {
+      document.body.style.backgroundColor = "black"
+      await new Promise((resolve) => setTimeout(resolve, 15))
+    })
+    assert.equal(host.classList.contains("dark"), true)
+    await act(async () =>
+      window.dispatchEvent(
+        new dom.window.PageTransitionEvent("pagehide", { persisted: true })
+      )
+    )
+    assert.equal(document.querySelector("[data-docmrk-feedback]"), host)
+    assert.equal(typeof contextChanged, "function")
+    await act(async () => {
+      document.body.style.backgroundColor = "white"
+      window.dispatchEvent(
+        new dom.window.PageTransitionEvent("pageshow", { persisted: true })
+      )
+      assert.equal(
+        host.classList.contains("dark"),
+        false,
+        "BFCache restore reads the current theme immediately"
+      )
+    })
+    assert.equal(reads, 3)
+    assert.equal(shadow.querySelectorAll("style").length, 1)
     await act(async () =>
       window.dispatchEvent(
         new dom.window.PageTransitionEvent("pagehide", { persisted: false })
@@ -96,6 +123,13 @@ test("shared control styles stay inside each shadow root and survive account ref
     )
     assert.equal(document.querySelector("[data-docmrk-feedback]"), null)
     assert.equal(contextChanged, undefined)
+    document.body.style.backgroundColor = "black"
+    await new Promise((resolve) => setTimeout(resolve, 15))
+    assert.equal(
+      host.classList.contains("dark"),
+      false,
+      "unloaded controls stop following page theme"
+    )
   } finally {
     if (contextChanged)
       await act(async () =>

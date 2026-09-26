@@ -5,6 +5,7 @@ import { createRoot } from "react-dom/client"
 
 import { FeedbackDiv } from "~components/feedback-div"
 import { CONTEXT_CHANGED_KEY } from "~core/contracts"
+import { observePageTheme } from "~core/page-theme"
 import { observeTweets } from "~core/twitter-dom"
 
 export const config: PlasmoCSConfig = {
@@ -17,7 +18,9 @@ export const config: PlasmoCSConfig = {
 }
 
 let contextVersion = 0
+const theme = observePageTheme(document)
 const tweets = observeTweets(document, (host, tweet) => {
+  const untrackTheme = theme.track(host)
   const shadow = host.attachShadow({ mode: "open" })
   const style = document.createElement("style")
   style.textContent = cssText
@@ -28,7 +31,13 @@ const tweets = observeTweets(document, (host, tweet) => {
     root.render(createElement(FeedbackDiv, { tweet: details, contextVersion }))
   }
   update(tweet)
-  return { update, dispose: () => root.unmount() }
+  return {
+    update,
+    dispose: () => {
+      untrackTheme()
+      root.unmount()
+    }
+  }
 })
 
 const onContextChanged = (
@@ -42,16 +51,22 @@ const onContextChanged = (
 }
 chrome.storage.onChanged.addListener(onContextChanged)
 
-window.addEventListener("pageshow", (event) => {
+const onPageShow = (event: PageTransitionEvent) => {
   if (event.persisted) {
+    theme.refresh()
     contextVersion += 1
     tweets.refresh()
   }
-})
+}
 
-window.addEventListener("pagehide", (event) => {
+const onPageHide = (event: PageTransitionEvent) => {
   if (!event.persisted) {
     tweets.dispose()
+    theme.dispose()
     chrome.storage.onChanged.removeListener(onContextChanged)
+    window.removeEventListener("pageshow", onPageShow)
+    window.removeEventListener("pagehide", onPageHide)
   }
-})
+}
+window.addEventListener("pageshow", onPageShow)
+window.addEventListener("pagehide", onPageHide)
