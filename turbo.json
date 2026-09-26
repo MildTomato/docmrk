@@ -11,6 +11,11 @@
       "env": ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"],
       "outputs": [".next/**", "!.next/cache/**"]
     },
+    "extension#build": {
+      "dependsOn": ["^build"],
+      "env": ["PLASMO_PUBLIC_SUPABASE_URL", "PLASMO_PUBLIC_SUPABASE_KEY"],
+      "outputs": ["dist/**", "!dist/cache/**", "build/**", "!build/cache/**"]
+    },
     "lint": {},
     "dev": {
       "cache": false,
