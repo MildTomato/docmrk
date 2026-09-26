@@ -14,10 +14,17 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default async function FeedbackList() {
+export default async function FeedbackList({
+  organizationId,
+}: {
+  organizationId: string;
+}) {
   const supabase = createServerComponentClient<Database>({ cookies });
 
-  const { data: feedback, error } = await supabase.from("feedback").select();
+  const { data: feedback, error } = await supabase
+    .from("feedback")
+    .select()
+    .eq("organization_id", organizationId);
 
   if (error || !feedback) {
     return (
@@ -26,7 +33,7 @@ export default async function FeedbackList() {
           Could not load feedback for this organization. Please try again.
         </p>
         <Button asChild variant="outline" size="sm">
-          <a href="">Try again</a>
+          <a href={`/${encodeURIComponent(organizationId)}`}>Try again</a>
         </Button>
       </div>
     );
@@ -65,7 +72,7 @@ export default async function FeedbackList() {
           ))
         )}
       </TableBody>
-      <TableCaption>A list of your recent invoices.</TableCaption>
+      <TableCaption>Feedback saved to this organization.</TableCaption>
     </Table>
   );
 }
