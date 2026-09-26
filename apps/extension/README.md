@@ -66,6 +66,8 @@ to the existing Docmrk schema before using organization-scoped captures. It
 replaces global post uniqueness with `(organization_id, source, identifier_id)`
 and restricts feedback reads and inserts to organization owners. It preserves
 existing captures, including older rows without an `inserted_by` value.
+It replaces feedback read and insert policies from either the original schema
+or the organization-owner policy baseline. Existing update policies stay in place.
 The repository's original migration contains only `todos`; it isn't a complete
 bootstrap of the existing Docmrk database.
 
@@ -81,8 +83,11 @@ npm run build --workspace=extension
 
 The tests cover post discovery, quoted posts, page navigation, recycled DOM
 nodes, save states, session recovery, organization changes, and duplicate saves.
-`supabase/tests/extension-feedback.sql` verifies organization isolation and
-uniqueness against the existing database schema. Its fixtures roll back.
+Run `supabase/tests/extension-feedback.sql` as the database owner after applying
+the migration to a test database with the Docmrk schema. It verifies organization
+isolation, capture authorship, and uniqueness. The test creates its own users,
+source, and organizations, so it also runs on an empty schema. Its fixtures roll
+back without advancing identity sequences.
 
 In Chrome, verify the popup and settings, then open a post from the X timeline
 without scrolling. Confirm that its save control appears. Sign in, save a post,

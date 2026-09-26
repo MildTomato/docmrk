@@ -8,8 +8,14 @@ alter table public.feedback
 
 alter table public.feedback enable row level security;
 
-drop policy "Anyone can select" on public.feedback;
-drop policy "ALLOW INSERT FOR ANYONE" on public.feedback;
+-- Replace either deployed policy baseline. Permissive policies combine with OR,
+-- so an older INSERT policy must not survive and bypass the author check below.
+drop policy if exists "Anyone can select" on public.feedback;
+drop policy if exists "ALLOW INSERT FOR ANYONE" on public.feedback;
+drop policy if exists "Org owners can select feedback" on public.feedback;
+drop policy if exists "Org owners can insert feedback" on public.feedback;
+drop policy if exists "Organization owners can read feedback" on public.feedback;
+drop policy if exists "Organization owners can capture feedback" on public.feedback;
 
 create policy "Organization owners can read feedback"
   on public.feedback for select to authenticated
