@@ -70,3 +70,8 @@ redirect_uri = ""
 # Overrides the default auth provider URL. Used to support self-hosted gitlab, single-tenant Azure,
 # or any other third-party OIDC providers.
 url = ""
+
+[experimental.pgdelta]
+# pg-delta is the schema diff engine for db diff / db pull / db remote commit.
+# Set enabled = false to fall back to the legacy migra engine.
+enabled = true
