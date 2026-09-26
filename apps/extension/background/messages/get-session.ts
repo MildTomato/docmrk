@@ -1,17 +1,9 @@
 import type { PlasmoMessaging } from "@plasmohq/messaging"
 
-import { supabase } from "~core/supabase"
+import { backgroundService } from "~core/background-service"
 
 const handler: PlasmoMessaging.MessageHandler = async (_req, res) => {
-  const {
-    data: { session },
-    error
-  } = await supabase.auth.getSession()
-  if (error) {
-    res.send({ error: error.message })
-  } else {
-    res.send({ session })
-  }
+  res.send(await backgroundService.account({ action: "get" }))
 }
 
 export default handler

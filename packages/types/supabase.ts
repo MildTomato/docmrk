@@ -34,7 +34,9 @@ export type Database = {
         Row: {
           created_at: string
           id: number
+          identifier_id: string
           inserted_by: string | null
+          metadata: Json
           organization_id: string
           source: string
           status: Database["public"]["Enums"]["status"] | null
@@ -43,16 +45,20 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: number
+          identifier_id: string
           inserted_by?: string | null
+          metadata?: Json
           organization_id: string
-          source?: string
+          source: string
           status?: Database["public"]["Enums"]["status"] | null
           updated_at?: string | null
         }
         Update: {
           created_at?: string
           id?: number
+          identifier_id?: string
           inserted_by?: string | null
+          metadata?: Json
           organization_id?: string
           source?: string
           status?: Database["public"]["Enums"]["status"] | null
@@ -72,6 +78,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_source_fkey"
+            columns: ["source"]
+            isOneToOne: false
+            referencedRelation: "sources"
+            referencedColumns: ["key"]
           },
         ]
       }
@@ -137,6 +150,24 @@ export type Database = {
           },
         ]
       }
+      sources: {
+        Row: {
+          id: number
+          key: string
+          label: string
+        }
+        Insert: {
+          id?: number
+          key: string
+          label: string
+        }
+        Update: {
+          id?: number
+          key?: string
+          label?: string
+        }
+        Relationships: []
+      }
       teams: {
         Row: {
           id: number
@@ -192,7 +223,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      hello: "hello"
+      source: "internal" | "twitter" | "reddit" | "email" | "phone" | "custom"
       status: "resolved" | "review" | "in_progress" | "planned" | "untriaged"
     }
     CompositeTypes: {

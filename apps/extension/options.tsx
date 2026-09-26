@@ -1,168 +1,239 @@
-import type { Provider, User } from "@supabase/supabase-js"
-import { useEffect, useState } from "react"
+import { type FormEvent, useState } from "react"
+import { Button } from "ui/components/button"
+import { Input } from "ui/components/input"
+import { Label } from "ui/components/label"
 
-import { sendToBackground } from "@plasmohq/messaging"
-import { Storage } from "@plasmohq/storage"
-import { useStorage } from "@plasmohq/storage/hook"
+import {
+  AccountNotice,
+  Brand,
+  OrganizationPicker
+} from "~components/account-panel"
+import { useAccount } from "~core/use-account"
 
-import { supabase } from "~core/supabase"
+import "./style.css"
 
 function IndexOptions() {
-  const [user, setUser] = useStorage<User>({
-    key: "user",
-    instance: new Storage({
-      area: "local"
-    })
-  })
-
-  const [username, setUsername] = useState("jon.summers.muir@googlemail.com")
+  const { account, error, loading, pending, refresh, run } = useAccount()
+  const [mode, setMode] = useState<"login" | "signup">("login")
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [confirmationEmail, setConfirmationEmail] = useState("")
 
-  useEffect(() => {
-    async function init() {
-      const { data, error } = await supabase.auth.getSession()
-
-      if (error) {
-        console.error(error)
-        return
-      }
-      if (!!data.session) {
-        setUser(data.session.user)
-        console.log("will set session")
-        console.log("body", {
-          refresh_token: data.session.refresh_token,
-          access_token: data.session.access_token
-        })
-
-        const resp = await sendToBackground({
-          name: "ping",
-          body: {
-            id: 123
-          }
-        })
-        await sendToBackground({
-          name: "init-session",
-          body: {
-            refresh_token: data.session.refresh_token,
-            access_token: data.session.access_token
-          }
-        })
-      }
-    }
-
-    init()
-  }, [])
-
-  const handleEmailLogin = async (
-    type: "LOGIN" | "SIGNUP",
-    username: string,
-    password: string
-  ) => {
-    try {
-      const {
-        error,
-        data: { user }
-      } =
-        type === "LOGIN"
-          ? await supabase.auth.signInWithPassword({
-              email: username,
-              password
-            })
-          : await supabase.auth.signUp({ email: username, password })
-
-      if (error) {
-        alert("Error with auth: " + error.message)
-      } else if (!user) {
-        alert("Signup successful, confirmation mail should be sent soon!")
-      } else {
-        setUser(user)
-      }
-    } catch (error) {
-      console.log("error", error)
-      alert(error.error_description || error)
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const result = await run({ action: mode, email: email.trim(), password })
+    if (result && !result.error) {
+      setPassword("")
+      setConfirmationEmail(
+        result.data?.confirmationRequired ? email.trim() : ""
+      )
+      if (result.data?.confirmationRequired) setMode("login")
     }
   }
 
-  const handleOAuthLogin = async (provider: Provider, scopes = "email") => {
-    await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        scopes,
-        redirectTo: location.href
-      }
-    })
+  const handleGitHub = async () => {
+    const result = await run({ action: "oauth-github" })
+    if (result && !result.error) {
+      setPassword("")
+      setConfirmationEmail("")
+    }
   }
 
   return (
-    <main
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        width: "100%",
-        top: 240,
-        position: "relative"
-      }}>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          width: 240,
-          justifyContent: "space-between",
-          gap: 4.2
-        }}>
-        {user && (
-          <>
-            <h3>
-              {user.email} - {user.id}
-            </h3>
-            <button
-              onClick={() => {
-                supabase.auth.signOut()
-                setUser(null)
-              }}>
-              Logout
-            </button>
-          </>
-        )}
-        {!user && (
-          <>
-            <label>Email</label>
-            <input
-              type="text"
-              placeholder="Your Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-            <label>Password</label>
-            <input
-              type="password"
-              placeholder="Your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+    <main className="min-h-screen bg-background text-sm text-foreground">
+      <header className="border-b">
+        <div className="mx-auto flex h-16 w-full max-w-4xl items-center px-6">
+          <Brand />
+        </div>
+      </header>
+      <div className="mx-auto flex w-full max-w-md flex-col gap-6 px-6 py-12">
+        <header className="flex flex-col gap-3">
+          <p className="text-xs font-medium text-muted-foreground">
+            CHROME EXTENSION
+          </p>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Save what matters.
+          </h1>
+          <p className="text-muted-foreground">
+            Connect your account and save posts from X to your Docmrk
+            organization.
+          </p>
+        </header>
 
-            <button
-              onClick={(e) => {
-                handleEmailLogin("SIGNUP", username, password)
-              }}>
-              Sign up
-            </button>
-            <button
-              onClick={(e) => {
-                handleEmailLogin("LOGIN", username, password)
-              }}>
-              Login
-            </button>
+        <section
+          className="flex flex-col gap-6 rounded-lg border bg-card p-6 text-card-foreground"
+          aria-busy={loading || !!pending}>
+          {loading ? (
+            <p className="text-muted-foreground" role="status">
+              Checking your account…
+            </p>
+          ) : (
+            <>
+              <AccountNotice
+                error={error}
+                onRetry={refresh}
+                disabled={!!pending}
+              />
+              {account?.user ? (
+                <>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex min-w-0 flex-col gap-1">
+                      <h2 className="text-base font-semibold">Your account</h2>
+                      <p className="break-all text-muted-foreground">
+                        {account.user.email || "Signed in to Docmrk"}
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="shrink-0"
+                      disabled={!!pending}
+                      onClick={() => void run({ action: "logout" })}>
+                      {pending === "logout" ? "Signing out…" : "Sign out"}
+                    </Button>
+                  </div>
+                  <OrganizationPicker
+                    account={account}
+                    disabled={!!pending}
+                    onChange={(organizationId) =>
+                      void run({
+                        action: "select-organization",
+                        organizationId
+                      })
+                    }
+                  />
+                  {pending === "select-organization" ? (
+                    <p className="text-muted-foreground" role="status">
+                      Updating your organization…
+                    </p>
+                  ) : !error && account.selectedOrganizationId ? (
+                    <p className="text-sm text-muted-foreground" role="status">
+                      You’re ready to save posts.
+                    </p>
+                  ) : null}
+                  {account.organizations.length === 0 ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={!!pending}
+                      onClick={refresh}>
+                      Refresh organizations
+                    </Button>
+                  ) : null}
+                </>
+              ) : account ? (
+                <>
+                  <h2 className="text-base font-semibold">
+                    {mode === "login"
+                      ? "Sign in to Docmrk"
+                      : "Create your account"}
+                  </h2>
+                  {confirmationEmail ? (
+                    <p className="text-sm text-muted-foreground" role="status">
+                      Check your email at <strong>{confirmationEmail}</strong>{" "}
+                      to confirm your account, then sign in here.
+                    </p>
+                  ) : null}
+                  <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        autoComplete="email"
+                        required
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                        disabled={!!pending}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="password">Password</Label>
+                      <Input
+                        id="password"
+                        name="password"
+                        type="password"
+                        autoComplete={
+                          mode === "login" ? "current-password" : "new-password"
+                        }
+                        minLength={mode === "signup" ? 6 : undefined}
+                        required
+                        value={password}
+                        onChange={(event) => setPassword(event.target.value)}
+                        disabled={!!pending}
+                        aria-describedby={
+                          mode === "signup" ? "password-hint" : undefined
+                        }
+                      />
+                      {mode === "signup" ? (
+                        <p
+                          className="text-xs text-muted-foreground"
+                          id="password-hint">
+                          Use at least 6 characters.
+                        </p>
+                      ) : null}
+                    </div>
+                    <Button type="submit" disabled={!!pending}>
+                      {pending === "login"
+                        ? "Signing in…"
+                        : pending === "signup"
+                        ? "Creating account…"
+                        : mode === "login"
+                        ? "Sign in"
+                        : "Create account"}
+                    </Button>
+                  </form>
+                  <p className="text-center text-xs text-muted-foreground">
+                    or
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={!!pending}
+                    onClick={() => void handleGitHub()}>
+                    {pending === "oauth-github"
+                      ? "Waiting for GitHub…"
+                      : "Continue with GitHub"}
+                  </Button>
+                  <p className="text-center text-xs text-muted-foreground">
+                    {mode === "login"
+                      ? "New to Docmrk? "
+                      : "Already have an account? "}
+                    <Button
+                      type="button"
+                      variant="link"
+                      size="sm"
+                      className="h-auto px-0 py-0"
+                      disabled={!!pending}
+                      onClick={() =>
+                        setMode(mode === "login" ? "signup" : "login")
+                      }>
+                      {mode === "login" ? "Create an account" : "Sign in"}
+                    </Button>
+                  </p>
+                </>
+              ) : null}
+            </>
+          )}
+        </section>
 
-            <button
-              onClick={(e) => {
-                handleOAuthLogin("github")
-              }}>
-              Sign in with GitHub
-            </button>
-          </>
-        )}
+        <section className="flex flex-col items-start gap-3">
+          <h2 className="font-medium">From your timeline to your team</h2>
+          <p className="text-muted-foreground">
+            Open X and choose <strong>Save to Docmrk</strong> on a post. Each
+            save goes to the organization selected above.
+          </p>
+          <Button asChild variant="link" className="h-auto px-0 py-0">
+            <a href="https://x.com/home" target="_blank" rel="noreferrer">
+              Open X{" "}
+              <span className="ml-2" aria-hidden="true">
+                ↗
+              </span>
+            </a>
+          </Button>
+        </section>
       </div>
     </main>
   )

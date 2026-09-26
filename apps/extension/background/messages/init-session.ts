@@ -1,18 +1,14 @@
 import type { PlasmoMessaging } from "@plasmohq/messaging"
 
-import { supabase } from "~core/supabase"
-
-const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
-  console.log(req.body)
-  console.log("init-session")
-
-  supabase.auth.onAuthStateChange((event, session) => {
-    console.log(event, session)
+const handler: PlasmoMessaging.MessageHandler = async (_req, res) => {
+  res.send({
+    data: null,
+    error: {
+      code: "INVALID_REQUEST",
+      message:
+        "Sign in through Docmrk settings. Sessions are managed by the extension background worker."
+    }
   })
-
-  await supabase.auth.setSession(req.body)
-
-  res.send({ success: true })
 }
 
 export default handler
